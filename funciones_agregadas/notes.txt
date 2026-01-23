@@ -158,3 +158,9 @@ HAVING
 	count(*) BETWEEN 6 and 10
 ORDER BY
 	count(*) DESC;
+
+-- Distinct
+-- Elimina valores duplicados y muestra solo valores únicos de una columna
+-- En este caso: obtiene todos los países sin repetir, aunque haya múltiples usuarios del mismo país
+-- Si hay 50 usuarios de Argentina, solo muestra "Argentina" una vez
+SELECT DISTINCT country from users;
