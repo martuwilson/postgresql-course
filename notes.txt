@@ -31,4 +31,38 @@
 -- DROP TABLE users; destruye la data users. Pero ojo si tiene relacion con otras tablas
 -- TRUNCATE table users; elimina los registros dentro de users. Drop borra la tabla, truncate borra todos los registros dentro de la tabla que elejis.
 
+-- operadores strings y funcs
+--SELECT * FROM users
+	
+-- todo minuscula o mayuscula o lenght, sumado concat
+--SELECT id, UPPER(name) AS upper_name, LOWER(name) as lower_name, LENGTH(name) as length, name, CONCAT('*',id,'-',name,'*'), '*'||id||'-'||name||'*' as concat_2 FROM users 
+
+--al ser SELECT no modifica la db, muestra las cols como pedi sin agregar las que no existen.
+
+
+
+--crear last name para el ejemplo solo teniendo name
+SELECT
+	name,
+	SUBSTRING(name, 0, 5),
+	position(' ' IN name),
+	SUBSTRING(name, 0, position(' ' IN name)) as first_name,
+	TRIM(SUBSTRING(name, position(' ' IN name))) as last_name
+from users;
+
+--separar los nombres como arriba pero limpio
+
+--SELECT
+--	SUBSTRING(name, 0, position(' ' IN name)) as first_name,
+--	TRIM(SUBSTRING(name, position(' ' IN name))) as last_name
+--from users;
+
+--agregarlos realmente a la db
+update users
+set
+first_name = SUBSTRING(name, 0, position(' ' IN name)),
+last_name = SUBSTRING(name, position(' ' IN name) + 1 )
+--sin where porque quiero que impacte a todos los registros
+
+
 

@@ -164,3 +164,17 @@ ORDER BY
 -- En este caso: obtiene todos los países sin repetir, aunque haya múltiples usuarios del mismo país
 -- Si hay 50 usuarios de Argentina, solo muestra "Argentina" una vez
 SELECT DISTINCT country from users;
+
+-- group by con otras funciones
+-- obtener el dominio del corre electronico y cuantos corres tenemos de ese dominio
+SELECT
+	count(*),
+	SUBSTRING(email, POSITION('@' IN email) + 1) AS domain -- +1 PARA SALTAR UN CARACTER Y EVITAR EL @
+FROM
+	users
+GROUP BY
+	DOMAIN
+HAVING
+	COUNT(*) > 1
+ORDER BY
+	DOMAIN ASC;
