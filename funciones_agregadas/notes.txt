@@ -94,3 +94,39 @@ GROUP BY
 	followers
 ORDER BY 
 followers DESC; -- Cuenta cuántos usuarios hay por cada cantidad exacta de followers, considerando solo los que tienen entre 4500 y 4700 seguidores y los ordena en desc
+
+
+EXPOSICION: TERMINOLOGIA Y ESTRUCTURAS
+dba: data base administrator
+
+DDL: Data definition lenguage -> create, alter, drop, truncate
+DML: Data manipulation lenguage--> insert, delete, update
+TCL: Transaction control lenguage --> commit, rollback
+DQL: Data query lenguage --> Select
+
+Agregate Functions & Filtering:
+ademas de los que vimos:
+- HAVING: de la mano del group by
+- ORDER BY
+
+filtrado de data:
+LIKE: filtrado de cierta expresion
+IN : DENTRO DE UNA SERIA DE OPCIONES
+IS NULL: una cuoluna es nula
+IS NOT NULL: viceversa
+WHERE
+AND : tabla de verdad es TRUE y TRUE
+OR: una condicion o la otra
+BETWEEN: condiciones entre dos valores
+
+Estructura general del select:
+
+SELECT *,campos,alias,funciones
+WHERE condiciones, and, or, in , like
+GROUP BY campo agrupador, ALL
+HAVING condicion
+ORDER BY expresion , ASC , DESC
+LIMIT valor, all
+OFFSET punto de inicio 
+
+
