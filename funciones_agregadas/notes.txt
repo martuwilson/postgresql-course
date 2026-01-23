@@ -1,0 +1,23 @@
+SELECT
+	first_name,
+	last_name,
+	followers
+FROM
+	users
+WHERE
+	"following" >= 4600
+	AND followers <= 4700 -- and agrega otra condicion
+ORDER BY -- ordenar en base a..
+	followers ASC --followes ascendentes
+
+-- BETWEEN
+SELECT
+	first_name,
+	last_name,
+	followers
+FROM
+	users
+WHERE
+	followers BETWEEN 4600 and 4700 -- lo mismo de arriba pero mas corto porque es en base a la misma columna (followers) pero sin el igual
+	ORDER BY
+	followers ASC
