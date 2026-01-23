@@ -178,3 +178,13 @@ HAVING
 	COUNT(*) > 1
 ORDER BY
 	DOMAIN ASC;
+
+
+--subqueries
+
+query dentro de otra query
+
+ejemplo:
+select * from Tabla A
+where (subquery from Tabla B)
+
