@@ -21,3 +21,76 @@ WHERE
 	followers BETWEEN 4600 and 4700 -- lo mismo de arriba pero mas corto porque es en base a la misma columna (followers) pero sin el igual
 	ORDER BY
 	followers ASC
+
+
+-- Funciones de agregacion: Agrupaciones MIN,MAX ETC
+--cuantos registros tienen la tabla, un conteo:
+SELECT
+	count(*) AS total_users
+FROM
+	users;
+
+--cual es el valor minimo de seguidores que tiene ALGUIEN
+SELECT
+	min(followers) AS min_followers
+FROM
+	users;
+
+--el maximo:
+SELECT
+	max(followers) AS max_followers
+FROM
+	users;
+
+--promedio de followers:
+SELECT
+	AVG(followers) AS avg_followers
+FROM
+	users;
+
+-- promedio manual:
+SELECT
+	sum(followers) / count(*) avg_manual
+FROM
+	users;
+
+-- redondear
+SELECT
+	round(AVG(followers)) AS avg_followers
+FROM
+	users;
+
+
+--GROUP BY
+-- group by
+--ej 1: lo muestra juntos pero sin contar ni agrupados
+SELECT
+	first_name,
+	last_name,
+	followers
+FROM
+	users
+WHERE followers = 4 or followers = 4999;
+
+--como deberia ser:
+SELECT
+	count(*),followers
+FROM
+	users
+WHERE
+	followers = 4
+	OR followers = 4999
+GROUP BY followers; --cuenta cuantos tienen 4 y los agrupa y asi mismo con el 4999.
+
+--ej 2:
+SELECT
+	count(*),
+	followers
+FROM
+	users
+WHERE
+	followers BETWEEN 4500 and 4700
+GROUP BY
+	followers
+ORDER BY 
+followers DESC; -- Cuenta cuántos usuarios hay por cada cantidad exacta de followers, considerando solo los que tienen entre 4500 y 4700 seguidores y los ordena en desc
