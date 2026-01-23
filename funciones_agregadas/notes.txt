@@ -130,3 +130,31 @@ LIMIT valor, all
 OFFSET punto de inicio 
 
 
+
+
+-- having
+
+--saber cuantas personas hay en cada pais
+SELECT
+	count(*),
+	country
+FROM
+	users
+GROUP BY
+	country
+ORDER BY
+	country asc;
+
+-- ahora con having con paises mayores a 6
+SELECT
+	count(*) AS total,
+	country
+FROM
+	users
+GROUP BY
+	country
+HAVING
+	--count(*) > 5
+	count(*) BETWEEN 6 and 10
+ORDER BY
+	count(*) DESC;
