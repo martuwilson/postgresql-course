@@ -38,3 +38,10 @@ Campo que referencia la Primary Key de otra tabla, estableciendo una relación e
 ### Composite Key (Llave Compuesta)
 Primary Key formada por la combinación de dos o más columnas para identificar un registro de forma única.
 **Ejemplo:** En una tabla de inscripciones: la combinación de `student_id` + `course_id` forma la llave primaria.
+
+### Añadir Primary Key manualmente
+```sql
+ALTER TABLE country
+ADD PRIMARY KEY (code);
+```
+
