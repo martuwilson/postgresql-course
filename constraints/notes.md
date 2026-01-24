@@ -45,3 +45,10 @@ ALTER TABLE country
 ADD PRIMARY KEY (code);
 ```
 
+### CONSTRAINT: CHECK
+Valida que los datos cumplan con una condición específica antes de ser insertados o actualizados.
+**Ejemplo:** Asegurar que el área de superficie de un país no sea negativa.
+```sql
+ALTER TABLE country
+ADD CHECK (surfacearea >= 0);
+```
