@@ -52,3 +52,16 @@ Valida que los datos cumplan con una condición específica antes de ser inserta
 ALTER TABLE country
 ADD CHECK (surfacearea >= 0);
 ```
+Ejemplo 2:
+```sql
+ALTER TABLE country
+ADD CHECK (
+	(continent = 'Asia')
+	OR (continent = 'South America')
+	OR (continent = 'North America')
+	OR (continent = 'Oceania')
+	OR (continent = 'Antarctica')
+	OR (continent = 'Africa')
+	OR (continent = 'Europe')
+);
+```
