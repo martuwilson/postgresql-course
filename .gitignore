@@ -1,0 +1,23 @@
+# PostgreSQL data directory
+postgres/
+
+# pgAdmin data, sessions, and configuration
+pgadmin/
+
+# Environment variables (if you add them later)
+.env
+.env.local
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# IDE/Editor specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
