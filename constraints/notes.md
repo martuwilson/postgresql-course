@@ -88,3 +88,21 @@ ADD CHECK (
 	OR (continent = 'Central America')
 );
 ```
+
+### Indices en la base de datos
+Si necesito el registro de Pedro, deberia ir indice por indice hasta el. Pero puede haber mas de uno por lo que la db corre todos los registros buscando la consulta. Pero el proceso es lento. Los indices es una forma de decir a la db que se vaya preparando para ciertas consultas. Preparas digamos el "punto de partida" y asi se hace menos lentos.
+Mejoras la velocidad de consulta con los indices.
+
+## Creando indices:
+
+-- crear indice en name:
+```sql
+create UNIQUE index "unique_country_name" on country(
+	name
+);
+```
+
+--index continentes
+```sql
+CREATE INDEX "country_continent" ON country (continent)
+```
