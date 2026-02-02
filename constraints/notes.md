@@ -65,3 +65,26 @@ ADD CHECK (
 	OR (continent = 'Europe')
 );
 ```
+
+### Si me equivoque en el check anterior:
+En la lista me falto Centro America pero agregarlo directamente no se puede. Requiero de:
+1- Hacer drop
+```sql
+ALTER TABLE country
+DROP CONSTRAINT "country_continent_check1";
+```
+
+2: volver a hacer el alter table add check pero modificado:
+```sql
+ALTER TABLE country
+ADD CHECK (
+	(continent = 'Asia')
+	OR (continent = 'South America')
+	OR (continent = 'North America')
+	OR (continent = 'Oceania')
+	OR (continent = 'Antarctica')
+	OR (continent = 'Africa')
+	OR (continent = 'Europe')
+	OR (continent = 'Central America')
+);
+```
