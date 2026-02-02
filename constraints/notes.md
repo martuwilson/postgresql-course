@@ -106,3 +106,10 @@ create UNIQUE index "unique_country_name" on country(
 ```sql
 CREATE INDEX "country_continent" ON country (continent)
 ```
+
+### Problemas en la vida real del unique index.
+Los índices UNIQUE pueden fallar si:
+- Ya existen datos duplicados en la tabla (la DB rechazará crear el índice)
+- Intentas insertar un valor que ya existe (violación de constraint)
+- Múltiples valores NULL (algunos DBMS permiten múltiples NULL, otros no)
+- Impacto en performance: cada INSERT/UPDATE debe verificar unicidad, lo que ralentiza escrituras en tablas grandes
