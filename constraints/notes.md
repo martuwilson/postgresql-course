@@ -113,3 +113,19 @@ Los índices UNIQUE pueden fallar si:
 - Intentas insertar un valor que ya existe (violación de constraint)
 - Múltiples valores NULL (algunos DBMS permiten múltiples NULL, otros no)
 - Impacto en performance: cada INSERT/UPDATE debe verificar unicidad, lo que ralentiza escrituras en tablas grandes
+
+Ejemplos de la clase:
+
+
+# Unique index en name, countrycode y district. Se asegura que no haya dos ciudades con el mismo nombre en el mismo país y distrito.
+```sql
+  CREATE UNIQUE INDEX "unique_name_countrycode_district" on city (
+	name,countrycode, district
+);
+```
+# Index en district para acelerar consultas que filtren por distrito. Se asegura que la base de datos tenga un índice para buscar rápidamente ciudades por distrito, aunque no garantiza unicidad.
+```sql
+  CREATE INDEX "index_district" on city (
+	district
+);
+```
