@@ -129,3 +129,30 @@ Ejemplos de la clase:
 	district
 );
 ```
+
+## Creando llaves foráneas:
+
+# Llave foránea en countrycode que referencia a code en country. Esto establece una relación entre las tablas city y country, asegurando que cada ciudad esté asociada a un país válido.
+```sql
+ALTER TABLE city
+	ADD CONSTRAINT fk_country_code
+	FOREIGN KEY ( countrycode )
+	REFERENCES country ( code );
+```
+# FK con countrylenguage. 
+```sql
+ALTER TABLE countrylanguage
+	ADD CONSTRAINT fk_country_code
+	FOREIGN KEY (countrycode)
+	REFERENCES country(code)
+	ON DELETE CASCADE; -- Si un país es eliminado, todas sus lenguas asociadas también serán eliminadas automáticamente.
+```
+
+# Eliminar una fk:
+```sql
+ALTER TABLE city
+	DROP CONSTRAINT fk_country_code;
+```
+
+## ON DELETE - CASCADE
+Cuando se elimina un registro en la tabla padre (por ejemplo, un país), todos los registros relacionados en la tabla hija (por ejemplo, ciudades o lenguas) también se eliminan automáticamente. Esto ayuda a mantener la integridad referencial sin dejar registros huérfanos.
