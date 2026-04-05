@@ -66,3 +66,59 @@ from continent b
 where b.name = a.continent
 ```
 Este código actualiza la tabla country para que en lugar de mostrar el nombre del continente, muestre el código del continente basado en la tabla continent, utilizando un join para mejorar la eficiencia de la consulta.
+
+## Cambio de tipo de dato y llave foranea
+
+# Cambiar tipo de dato de continent en country de text a int4
+```sql
+alter table country
+alter COLUMN continent type int4
+using continent::INTEGER; -- esto es para convertir los datos de continent a int4, ya que actualmente son text y no se pueden convertir directamente a int4 sin una conversión explícita.
+```
+
+El codigo de arriba cambia el tipo de dato de la columna continent en la tabla country de text a int4, utilizando una conversión explícita para asegurar que los datos se conviertan correctamente.
+
+# Alternativas para cambiar el tipo de dato de continent en country de text a int4:
+1- Crear una nueva columna con el tipo de dato int4, copiar los datos convertidos a la nueva columna, eliminar la columna original y renombrar la nueva columna.
+```sql
+alter table country
+add COLUMN continent_int int4;
+update country
+set continent_int = continent::INTEGER;
+alter table country
+drop COLUMN continent;
+alter table country
+rename COLUMN continent_int to continent;
+```
+2- Crear una nueva tabla con el tipo de dato int4, copiar los datos convertidos a la nueva tabla, eliminar la tabla original y renombrar la nueva tabla.
+```sql
+create table country_new (
+    code text,
+    name text,
+    continent int4,
+    region text,
+    surfacearea float8,
+    indepyear int4,
+    population int4,
+    lifeexpectancy float8,
+    gnp float8,
+    gnpold float8,
+    localname text,
+    governmentform text,
+    headOfState text,
+    capital int4
+);
+insert into country_new (code, name, continent, region, surfacearea, indepyear, population, lifeexpectancy, gnp, gnpold, localname, governmentform, headOfState, capital)
+select code, name, continent::INTEGER, region, surfacearea, indepyear, population, lifeexpectancy, gnp, gnpold, localname, governmentform, headOfState, capital
+from country;
+drop table country;
+alter table country_new rename to country;
+```
+
+# Agregar FK en la tabla country, columna continent, referenciando a la columna code de la tabla continent
+```sql
+alter table country
+add CONSTRAINT country_continent_fk 
+FOREIGN KEY (continent) REFERENCES continent(code);
+```
+Esto tambien puede hacerse directo en table plus sin usar la query, pero es importante saber como hacerlo con query para entender el proceso.
