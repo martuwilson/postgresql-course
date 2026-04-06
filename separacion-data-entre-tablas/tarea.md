@@ -1,55 +1,99 @@
 
 
--- Tarea con countryLanguage
+# Tarea: Separación de datos con `countryLanguage`
 
--- Crear la tabla de language
+---
 
--- Sequence and defined type
+## 1. Crear la tabla `language`
+
+Primero se crea la secuencia y luego la tabla:
+
+```sql
 CREATE SEQUENCE IF NOT EXISTS language_code_seq;
 
-
--- Table Definition
 CREATE TABLE "public"."language" (
-    "code" int4 NOT NULL DEFAULT 	nextval('language_code_seq'::regclass),
+    "code" int4 NOT NULL DEFAULT nextval('language_code_seq'::regclass),
     "name" text NOT NULL,
     PRIMARY KEY ("code")
 );
+```
 
--- Crear una columna en countrylanguage
+---
+
+## 2. Agregar columna `languagecode` en `countrylanguage`
+
+```sql
 ALTER TABLE countrylanguage
 ADD COLUMN languagecode varchar(3);
+```
 
---AGREGAR DATA A LANGUAGE
-select DISTINCT language
-from countrylanguage
-order by language ASC;
+---
 
-insert into language(name)
-select DISTINCT language
-from countrylanguage;
+## 3. Poblar la tabla `language`
 
+Primero se verifica la data con un `SELECT`:
 
--- Empezar con el select para confirmar lo que vamos a actualizar
+```sql
+SELECT DISTINCT language
+FROM countrylanguage
+ORDER BY language ASC;
+```
 
-select
-	"language",
-	(select code from "language" b where a.language = b.name)
-from countrylanguage a;
+Luego se inserta:
 
+```sql
+INSERT INTO language(name)
+SELECT DISTINCT language
+FROM countrylanguage;
+```
 
--- Actualizar todos los registros
-update countrylanguage a
-set languagecode = (select code from "language" b where a.language = b.name);
+---
 
--- Cambiar tipo de dato en countrylanguage - languagecode por int4
-alter table countrylanguage
-alter COLUMN languagecode type int4
-using languagecode::INTEGER;
+## 4. Verificar la actualización antes de ejecutarla
 
--- para agregar la FK necesito hacer UNIQUE la name
-ALTER TABLE language    
+```sql
+SELECT
+    "language",
+    (SELECT code FROM "language" b WHERE a.language = b.name)
+FROM countrylanguage a;
+```
+
+---
+
+## 5. Actualizar los registros con el código correspondiente
+
+```sql
+UPDATE countrylanguage a
+SET languagecode = (SELECT code FROM "language" b WHERE a.language = b.name);
+```
+
+---
+
+## 6. Cambiar el tipo de dato de `languagecode` a `int4`
+
+```sql
+ALTER TABLE countrylanguage
+ALTER COLUMN languagecode TYPE int4
+USING languagecode::INTEGER;
+```
+
+---
+
+## 7. Agregar restricción `UNIQUE` en `language.name`
+
+Necesario para poder referenciarla como FK:
+
+```sql
+ALTER TABLE language
 ADD CONSTRAINT language_name_unique UNIQUE (name);
--- Crear el forening key y constraints de no nulo el language_code
-alter table countrylanguage
-add CONSTRAINT countrylanguage_language_fk
+```
+
+---
+
+## 8. Crear la Foreign Key en `countrylanguage`
+
+```sql
+ALTER TABLE countrylanguage
+ADD CONSTRAINT countrylanguage_language_fk
 FOREIGN KEY (language) REFERENCES language(name);
+```
