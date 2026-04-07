@@ -119,3 +119,21 @@ order by
   b.name asc;
 ```
 El codigo de arriba devuelve el nombre del continente junto con la cantidad de países que pertenecen a cada continente, incluyendo aquellos continentes que no tienen países asociados (con count(*) como 0).
+
+## Tarea con generar tabla
+```sql
+(SELECT
+	count(*) as total,
+	b.name
+from country a
+inner join continent b on a.continent = b.code
+where b.name NOT LIKE '%America%'
+group by
+	b.name)
+union
+(select count(*) as total, 'America' from country a
+inner join continent b on a.continent = b.code
+where b.name like '%America%')
+order by total asc;
+```
+El código de arriba devuelve el nombre del continente junto con la cantidad de países que pertenecen a cada continente, pero agrupa todos los continentes que contienen "America" en un solo grupo llamado "America", y los demás continentes se muestran por separado. El resultado se ordena por la cantidad de países en orden ascendente.
