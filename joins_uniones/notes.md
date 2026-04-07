@@ -137,3 +137,18 @@ where b.name like '%America%')
 order by total asc;
 ```
 El código de arriba devuelve el nombre del continente junto con la cantidad de países que pertenecen a cada continente, pero agrupa todos los continentes que contienen "America" en un solo grupo llamado "America", y los demás continentes se muestran por separado. El resultado se ordena por la cantidad de países en orden ascendente.
+
+## Tarea: pais con mas ciudades
+
+```sql
+select
+	count(*) as total,
+	a.name
+from country a
+inner join city b on a.code = b.countrycode
+group by
+	a.name
+order by 
+	count(*) desc
+limit 1;
+```
