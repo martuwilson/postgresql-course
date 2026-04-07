@@ -152,3 +152,48 @@ order by
 	count(*) desc
 limit 1;
 ```
+
+## Quiero saber los idiomas oficiales que se hablan por continent
+
+1ro hago:
+```sql
+select * from countrylanguage where isofficial is true;
+```
+Ahora paso por country porque dentro tengo el codigo de pais y de continente, es una relacion de 3 tablas.
+
+2: relacionar country con countrylanguage
+```sql
+select
+	a.language,
+	b.continent
+from
+	countrylanguage a
+inner join country b on a.countrycode = b.code
+where a.isofficial = true;
+```
+ahora al codigo de arriba e agregamos la tabla de contient para obtener el nombre del continente
+```sql
+select distinct
+	a.language,
+	c.name as continent
+from
+	countrylanguage a
+inner join country b on a.countrycode = b.code
+inner join continent c on b.continent = c.code
+where a.isofficial = true;
+```
+
+## Ahora cuantos idiomas oficiales se hablan por continente
+```sql
+select count(*), continent from (
+select distinct a.language,
+	c.name as continent
+from
+	countrylanguage a
+inner join country b on a.countrycode = b.code
+inner join continent c on b.continent = c.code
+where a.isofficial = true
+) as totales
+group by
+	continent;
+```
