@@ -56,3 +56,24 @@ SELECT *
 from salary_department
 where avg_salary > 3000
 ```
+
+### Ejercicio 2:
+Usando dos CTEs, traé el empleado con el salario más alto de cada departamento.
+
+```sql
+WITH rank_salary_department AS (
+	SELECT
+	b.name,
+	b.salary,
+	a.department_name,
+	ROW_NUMBER() OVER (PARTITION BY a.department_name ORDER BY b.salary DESC) as rank_num
+FROM departments a
+INNER JOIN employees b ON a.id = b.department_id
+),
+rank_one AS (
+	select *
+	from rank_salary_department
+	where rank_num = 1
+)
+SELECT * from rank_one;
+```
