@@ -132,3 +132,312 @@ ORDER BY
 
 ## Conclusión:
 > **SupplierC** es el mejor proveedor de todos los KPIs. Tiene OTIF **100%**, Fill Rate **100%** y Lead Time promedio de solo **7 días**. Es un proveedor confiable y rápido. **SupplierB** es el mas crítico, con OTIF **20%**, Fill Rate **87%** y Lead Time promedio de **9 días**. Es un proveedor que llega tarde pero casi completo. Sugiere un tema de puntualidad y no de cantidad. Recomendaría revisar acuerdos de entrega antes de omitir al proveedor. **SupplierA** tiene OTIF **75%**, Fill Rate **97%** y Lead Time promedio de **10 días**. Es un proveedor decente pero no tan bueno como SupplierC.
+
+
+# Caso 2
+## Paso 1: Limpiar supplier_name con varios formatos
+**Query:**
+```sql
+select
+	supplier_name as original,
+	UPPER(
+		REPLACE(supplier_name, '_', '')
+	) as normalizado
+FROM supply_chain_dirty;
+```
+
+## Paso 2: Lo mismo con region
+```sql
+Select
+	region as original,
+	UPPER(
+		region
+	) as normalizado
+FROM supply_chain_dirty;
+```
+
+## Paso 3: Formatear fechas
+
+```sql
+SELECT
+    order_date as original_order,
+    expected_delivery as original_expected,
+    actual_delivery as original_actual,
+    CASE
+        WHEN order_date LIKE '__/__/____' AND SPLIT_PART(order_date, '/', 1)::INT > 12 
+            THEN TO_DATE(order_date, 'DD/MM/YYYY')
+        WHEN order_date LIKE '__/__/____' 
+            THEN TO_DATE(order_date, 'MM/DD/YYYY')
+        WHEN order_date LIKE '__-__-____' 
+            THEN TO_DATE(order_date, 'DD-MM-YYYY')
+        WHEN order_date LIKE '____-__-__' 
+            THEN TO_DATE(order_date, 'YYYY-MM-DD')
+    END as order_date_clean,
+    CASE
+        WHEN expected_delivery LIKE '__/__/____' AND SPLIT_PART(expected_delivery, '/', 1)::INT > 12 
+            THEN TO_DATE(expected_delivery, 'DD/MM/YYYY')
+        WHEN expected_delivery LIKE '__/__/____' 
+            THEN TO_DATE(expected_delivery, 'MM/DD/YYYY')
+        WHEN expected_delivery LIKE '__-__-____' 
+            THEN TO_DATE(expected_delivery, 'DD-MM-YYYY')
+        WHEN expected_delivery LIKE '____-__-__' 
+            THEN TO_DATE(expected_delivery, 'YYYY-MM-DD')
+    END as expected_delivery_clean,
+    CASE
+        WHEN actual_delivery LIKE '__/__/____' AND SPLIT_PART(actual_delivery, '/', 1)::INT > 12 
+            THEN TO_DATE(actual_delivery, 'DD/MM/YYYY')
+        WHEN actual_delivery LIKE '__/__/____' 
+            THEN TO_DATE(actual_delivery, 'MM/DD/YYYY')
+        WHEN actual_delivery LIKE '__-__-____' 
+            THEN TO_DATE(actual_delivery, 'DD-MM-YYYY')
+        WHEN actual_delivery LIKE '____-__-__' 
+            THEN TO_DATE(actual_delivery, 'YYYY-MM-DD')
+    END as actual_delivery_clean
+FROM supply_chain_dirty;
+```
+
+## Paso 4: CTE de limpieza de todo lo anterior junto
+```sql
+WITH cleaned_data AS (
+    SELECT
+        UPPER(REPLACE(supplier_name, '_', '')) as supplier_name,
+        UPPER(region) as region,
+        CASE
+            WHEN order_date LIKE '__/__/____' AND SPLIT_PART(order_date, '/', 1)::INT > 12 
+                THEN TO_DATE(order_date, 'DD/MM/YYYY')
+            WHEN order_date LIKE '__/__/____' 
+                THEN TO_DATE(order_date, 'MM/DD/YYYY')
+            WHEN order_date LIKE '__-__-____' 
+                THEN TO_DATE(order_date, 'DD-MM-YYYY')
+            WHEN order_date LIKE '____-__-__' 
+                THEN TO_DATE(order_date, 'YYYY-MM-DD')
+        END as order_date,
+        CASE
+            WHEN expected_delivery LIKE '__/__/____' AND SPLIT_PART(expected_delivery, '/', 1)::INT > 12 
+                THEN TO_DATE(expected_delivery, 'DD/MM/YYYY')
+            WHEN expected_delivery LIKE '__/__/____' 
+                THEN TO_DATE(expected_delivery, 'MM/DD/YYYY')
+            WHEN expected_delivery LIKE '__-__-____' 
+                THEN TO_DATE(expected_delivery, 'DD-MM-YYYY')
+            WHEN expected_delivery LIKE '____-__-__' 
+                THEN TO_DATE(expected_delivery, 'YYYY-MM-DD')
+        END as expected_delivery,
+        CASE
+            WHEN actual_delivery LIKE '__/__/____' AND SPLIT_PART(actual_delivery, '/', 1)::INT > 12 
+                THEN TO_DATE(actual_delivery, 'DD/MM/YYYY')
+            WHEN actual_delivery LIKE '__/__/____' 
+                THEN TO_DATE(actual_delivery, 'MM/DD/YYYY')
+            WHEN actual_delivery LIKE '__-__-____' 
+                THEN TO_DATE(actual_delivery, 'DD-MM-YYYY')
+            WHEN actual_delivery LIKE '____-__-__' 
+                THEN TO_DATE(actual_delivery, 'YYYY-MM-DD')
+        END as actual_delivery,
+        quantity_ordered,
+        quantity_delivered
+    FROM supply_chain_dirty
+    WHERE actual_delivery IS NOT NULL AND quantity_delivered IS NOT NULL AND quantity_delivered > 0
+)
+SELECT *
+FROM cleaned_data;
+```
+
+## Paso 4: Agregar CTE de OTIF
+```sql
+WITH cleaned_data AS (
+    SELECT
+        UPPER(REPLACE(supplier_name, '_', '')) as supplier_name,
+        UPPER(region) as region,
+        CASE
+            WHEN order_date LIKE '__/__/____' AND SPLIT_PART(order_date, '/', 1)::INT > 12 
+                THEN TO_DATE(order_date, 'DD/MM/YYYY')
+            WHEN order_date LIKE '__/__/____' 
+                THEN TO_DATE(order_date, 'MM/DD/YYYY')
+            WHEN order_date LIKE '__-__-____' 
+                THEN TO_DATE(order_date, 'DD-MM-YYYY')
+            WHEN order_date LIKE '____-__-__' 
+                THEN TO_DATE(order_date, 'YYYY-MM-DD')
+        END as order_date,
+        CASE
+            WHEN expected_delivery LIKE '__/__/____' AND SPLIT_PART(expected_delivery, '/', 1)::INT > 12 
+                THEN TO_DATE(expected_delivery, 'DD/MM/YYYY')
+            WHEN expected_delivery LIKE '__/__/____' 
+                THEN TO_DATE(expected_delivery, 'MM/DD/YYYY')
+            WHEN expected_delivery LIKE '__-__-____' 
+                THEN TO_DATE(expected_delivery, 'DD-MM-YYYY')
+            WHEN expected_delivery LIKE '____-__-__' 
+                THEN TO_DATE(expected_delivery, 'YYYY-MM-DD')
+        END as expected_delivery,
+        CASE
+            WHEN actual_delivery LIKE '__/__/____' AND SPLIT_PART(actual_delivery, '/', 1)::INT > 12 
+                THEN TO_DATE(actual_delivery, 'DD/MM/YYYY')
+            WHEN actual_delivery LIKE '__/__/____' 
+                THEN TO_DATE(actual_delivery, 'MM/DD/YYYY')
+            WHEN actual_delivery LIKE '__-__-____' 
+                THEN TO_DATE(actual_delivery, 'DD-MM-YYYY')
+            WHEN actual_delivery LIKE '____-__-__' 
+                THEN TO_DATE(actual_delivery, 'YYYY-MM-DD')
+        END as actual_delivery,
+        quantity_ordered,
+        quantity_delivered
+    FROM supply_chain_dirty
+    WHERE actual_delivery IS NOT NULL AND quantity_delivered IS NOT NULL AND quantity_delivered > 0
+),
+otif_calculation AS (
+    SELECT
+        supplier_name,
+        region,
+        ROUND(
+            SUM(
+                CASE
+                    WHEN actual_delivery <= expected_delivery
+                    AND quantity_delivered = quantity_ordered
+                    THEN 1 ELSE 0
+                END
+            ) * 100.0 / COUNT(*), 2
+        ) AS otif_percentage
+    FROM cleaned_data
+    GROUP BY supplier_name, region
+)
+SELECT *
+FROM otif_calculation;
+```
+
+## Paso 5: Agregar Fill Rate
+```sql
+WITH cleaned_data AS (
+    SELECT
+        UPPER(REPLACE(supplier_name, '_', '')) as supplier_name,
+        UPPER(region) as region,
+        CASE
+            WHEN order_date LIKE '__/__/____' AND SPLIT_PART(order_date, '/', 1)::INT > 12 
+                THEN TO_DATE(order_date, 'DD/MM/YYYY')
+            WHEN order_date LIKE '__/__/____' 
+                THEN TO_DATE(order_date, 'MM/DD/YYYY')
+            WHEN order_date LIKE '__-__-____' 
+                THEN TO_DATE(order_date, 'DD-MM-YYYY')
+            WHEN order_date LIKE '____-__-__' 
+                THEN TO_DATE(order_date, 'YYYY-MM-DD')
+        END as order_date,
+        CASE
+            WHEN expected_delivery LIKE '__/__/____' AND SPLIT_PART(expected_delivery, '/', 1)::INT > 12 
+                THEN TO_DATE(expected_delivery, 'DD/MM/YYYY')
+            WHEN expected_delivery LIKE '__/__/____' 
+                THEN TO_DATE(expected_delivery, 'MM/DD/YYYY')
+            WHEN expected_delivery LIKE '__-__-____' 
+                THEN TO_DATE(expected_delivery, 'DD-MM-YYYY')
+            WHEN expected_delivery LIKE '____-__-__' 
+                THEN TO_DATE(expected_delivery, 'YYYY-MM-DD')
+        END as expected_delivery,
+        CASE
+            WHEN actual_delivery LIKE '__/__/____' AND SPLIT_PART(actual_delivery, '/', 1)::INT > 12 
+                THEN TO_DATE(actual_delivery, 'DD/MM/YYYY')
+            WHEN actual_delivery LIKE '__/__/____' 
+                THEN TO_DATE(actual_delivery, 'MM/DD/YYYY')
+            WHEN actual_delivery LIKE '__-__-____' 
+                THEN TO_DATE(actual_delivery, 'DD-MM-YYYY')
+            WHEN actual_delivery LIKE '____-__-__' 
+                THEN TO_DATE(actual_delivery, 'YYYY-MM-DD')
+        END as actual_delivery,
+        quantity_ordered,
+        quantity_delivered
+    FROM supply_chain_dirty
+    WHERE actual_delivery IS NOT NULL AND quantity_delivered IS NOT NULL AND quantity_delivered > 0
+),
+otif_calculation AS (
+    SELECT
+        supplier_name,
+        region,
+        ROUND(
+            SUM(
+                CASE
+                    WHEN actual_delivery <= expected_delivery
+                    AND quantity_delivered = quantity_ordered
+                    THEN 1 ELSE 0
+                END
+            ) * 100.0 / COUNT(*), 2
+        ) AS otif_percentage,
+        ROUND(SUM(quantity_delivered) * 100.0 / SUM(quantity_ordered), 2) as fill_rate
+    FROM cleaned_data
+    GROUP BY supplier_name, region
+)
+SELECT *
+FROM otif_calculation;
+```
+
+## Paso 6: Agregar Lead Time
+```sql
+WITH cleaned_data AS (
+    SELECT
+        UPPER(REPLACE(supplier_name, '_', '')) as supplier_name,
+        UPPER(region) as region,
+        CASE
+            WHEN order_date LIKE '__/__/____' AND SPLIT_PART(order_date, '/', 1)::INT > 12 
+                THEN TO_DATE(order_date, 'DD/MM/YYYY')
+            WHEN order_date LIKE '__/__/____' 
+                THEN TO_DATE(order_date, 'MM/DD/YYYY')
+            WHEN order_date LIKE '__-__-____' 
+                THEN TO_DATE(order_date, 'DD-MM-YYYY')
+            WHEN order_date LIKE '____-__-__' 
+                THEN TO_DATE(order_date, 'YYYY-MM-DD')
+        END as order_date,
+        CASE
+            WHEN expected_delivery LIKE '__/__/____' AND SPLIT_PART(expected_delivery, '/', 1)::INT > 12 
+                THEN TO_DATE(expected_delivery, 'DD/MM/YYYY')
+            WHEN expected_delivery LIKE '__/__/____' 
+                THEN TO_DATE(expected_delivery, 'MM/DD/YYYY')
+            WHEN expected_delivery LIKE '__-__-____' 
+                THEN TO_DATE(expected_delivery, 'DD-MM-YYYY')
+            WHEN expected_delivery LIKE '____-__-__' 
+                THEN TO_DATE(expected_delivery, 'YYYY-MM-DD')
+        END as expected_delivery,
+        CASE
+            WHEN actual_delivery LIKE '__/__/____' AND SPLIT_PART(actual_delivery, '/', 1)::INT > 12 
+                THEN TO_DATE(actual_delivery, 'DD/MM/YYYY')
+            WHEN actual_delivery LIKE '__/__/____' 
+                THEN TO_DATE(actual_delivery, 'MM/DD/YYYY')
+            WHEN actual_delivery LIKE '__-__-____' 
+                THEN TO_DATE(actual_delivery, 'DD-MM-YYYY')
+            WHEN actual_delivery LIKE '____-__-__' 
+                THEN TO_DATE(actual_delivery, 'YYYY-MM-DD')
+        END as actual_delivery,
+        quantity_ordered,
+        quantity_delivered
+    FROM supply_chain_dirty
+    WHERE actual_delivery IS NOT NULL AND quantity_delivered IS NOT NULL AND quantity_delivered > 0
+),
+otif_calculation AS (
+    SELECT
+        supplier_name,
+        region,
+        ROUND(
+            SUM(
+                CASE
+                    WHEN actual_delivery <= expected_delivery
+                    AND quantity_delivered = quantity_ordered
+                    THEN 1 ELSE 0
+                END
+            ) * 100.0 / COUNT(*), 2
+        ) AS otif_percentage,
+        ROUND(SUM(quantity_delivered) * 100.0 / SUM(quantity_ordered), 2) as fill_rate,
+        ROUND(AVG(actual_delivery - order_date)) as lead_time_days
+    FROM cleaned_data
+    GROUP BY supplier_name, region
+)
+SELECT *
+FROM otif_calculation;
+```
+## Conclusión final
+
+| Proveedor | Estado | Detalle |
+|-----------|--------|---------|
+| **SUPPLIERC** | ✅ Mejor proveedor | Referencia para negociar estándares con los demás. |
+| **SUPPLIERA** | ⚠️ Sólido en general | Brecha entre LATAM (75%) y Europe (100%) en OTIF merece investigación — puede ser logística regional. |
+| **SUPPLIERB** | 🔴 Proveedor crítico | OTIF 0% en LATAM y Europe con Fill Rate aceptable indica que el problema es de **puntualidad, no de cantidad**. Recomendaría revisar acuerdos de entrega antes de considerar cambio de proveedor. Lead Time de 13 días en Europe es el más alto — correlaciona con el OTIF bajo. |
+
+---
+
+## ⚠️ Data Quality Finding
+
+> Durante la limpieza detectamos fechas con formato ambiguo — cuando el día es ≤ 12 no es posible determinar automáticamente si el formato es `DD/MM` o `MM/DD`. Esto generó un **Lead Time negativo en SUPPLIERC USA**.
+>
+> **Recomendación:** establecer un estándar de formato de fechas con el equipo de datos antes de procesar futuros reportes.
