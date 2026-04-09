@@ -105,3 +105,30 @@ group by
 ORDER BY
 	fill_rate desc;
 ```
+
+## Conclusión:
+> Dato interesante: **SupplierB** tiene OTIF **20%** pero Fill Rate **87%** — eso significa que el problema principal de SupplierB es de tiempo, no de cantidad. Llega tarde pero casi completo.
+
+## Paso 4: Lead Time promedio por proveedor
+**Definición:**
+$$\text{Lead Time} = \text{Fecha de entrega} - \text{Fecha de orden}$$
+
+**Query:**
+```sql
+    SELECT
+	supplier_name,
+	ROUND(
+		AVG(
+		actual_delivery - order_date
+		)
+	) as lead_time_days
+FROM supply_chain_orders
+WHERE actual_delivery IS NOT NULL and order_date IS NOT NULL
+GROUP BY
+	supplier_name
+ORDER BY
+	lead_time_days DESC;
+```
+
+## Conclusión:
+> **SupplierC** es el mejor proveedor de todos los KPIs. Tiene OTIF **100%**, Fill Rate **100%** y Lead Time promedio de solo **7 días**. Es un proveedor confiable y rápido. **SupplierB** es el mas crítico, con OTIF **20%**, Fill Rate **87%** y Lead Time promedio de **9 días**. Es un proveedor que llega tarde pero casi completo. Sugiere un tema de puntualidad y no de cantidad. Recomendaría revisar acuerdos de entrega antes de omitir al proveedor. **SupplierA** tiene OTIF **75%**, Fill Rate **97%** y Lead Time promedio de **10 días**. Es un proveedor decente pero no tan bueno como SupplierC.
