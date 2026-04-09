@@ -35,6 +35,13 @@ SELECT *
 FROM supply_chain_orders
 WHERE actual_delivery IS NULL AND quantity_delivered IS NULL;
 ```
+**Si no supiese que columnas tienen NULLS:**
+```sql
+SELECT column_name
+FROM information_schema.columns
+WHERE table_name = 'supply_chain_orders'
+  AND is_nullable = 'YES';
+```
 
 > Se detectaron 2 NULLs: órdenes 3 y 9.
 > Opciones:
@@ -81,3 +88,20 @@ ORDER BY otif_percentage DESC;
 
 > **SupplierB** tiene un OTIF crítico del **20%** — antes de tomar decisiones analizaría si es un problema de Lead Time, cantidad entregada o ambos.
 
+## Paso 3: Fill Rate por proveedor
+**Definición:**
+$$\text{Fill Rate} = \frac{\text{Cantidad entregada}}{\text{Cantidad ordenada}} \times 100$$
+
+**Query:**
+```sql
+SELECT
+	supplier_name,
+	ROUND(SUM(quantity_delivered) * 100.0 / SUM(quantity_ordered), 2) as fill_rate
+FROM supply_chain_orders
+WHERE quantity_delivered IS NOT NULL
+AND quantity_ordered IS NOT NULL
+group by
+	supplier_name
+ORDER BY
+	fill_rate desc;
+```
