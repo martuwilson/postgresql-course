@@ -441,3 +441,65 @@ FROM otif_calculation;
 > Durante la limpieza detectamos fechas con formato ambiguo — cuando el día es ≤ 12 no es posible determinar automáticamente si el formato es `DD/MM` o `MM/DD`. Esto generó un **Lead Time negativo en SUPPLIERC USA**.
 >
 > **Recomendación:** establecer un estándar de formato de fechas con el equipo de datos antes de procesar futuros reportes.
+
+## Importante:
+Para que POWER BI lea la data limpia directamente lo recomendable es hacer una VIEW con el código del paso 6, así cada vez que se actualice la tabla `supply_chain_dirty` la VIEW se actualizará automáticamente con los datos limpios y los KPIs calculados.
+
+```sql
+CREATE VIEW supply_chain.v_clean_kpis AS
+WITH cleaned_data AS (
+    SELECT
+        UPPER(REPLACE(supplier_name, '_', '')) as supplier_name,
+        UPPER(region) as region,
+        CASE
+            WHEN order_date LIKE '__/__/____' AND SPLIT_PART(order_date, '/', 1)::INT > 12 
+                THEN TO_DATE(order_date, 'DD/MM/YYYY')
+            WHEN order_date LIKE '__/__/____' 
+                THEN TO_DATE(order_date, 'MM/DD/YYYY')
+            WHEN order_date LIKE '__-__-____' 
+                THEN TO_DATE(order_date, 'DD-MM-YYYY')
+            WHEN order_date LIKE '____-__-__' 
+                THEN TO_DATE(order_date, 'YYYY-MM-DD')
+        END as order_date,
+        CASE
+            WHEN expected_delivery LIKE '__/__/____' AND SPLIT_PART(expected_delivery, '/', 1)::INT > 12 
+                THEN TO_DATE(expected_delivery, 'DD/MM/YYYY')
+            WHEN expected_delivery LIKE '__/__/____' 
+                THEN TO_DATE(expected_delivery, 'MM/DD/YYYY')
+            WHEN expected_delivery LIKE '__-__-____' 
+                THEN TO_DATE(expected_delivery, 'DD-MM-YYYY')
+            WHEN expected_delivery LIKE '____-__-__' 
+                THEN TO_DATE(expected_delivery, 'YYYY-MM-DD')
+        END as expected_delivery,
+        CASE
+            WHEN actual_delivery LIKE '__/__/____' AND SPLIT_PART(actual_delivery, '/', 1)::INT > 12 
+                THEN TO_DATE(actual_delivery, 'DD/MM/YYYY')
+            WHEN actual_delivery LIKE '__/__/____' 
+                THEN TO_DATE(actual_delivery, 'MM/DD/YYYY')
+            WHEN actual_delivery LIKE '__-__-____' 
+                THEN TO_DATE(actual_delivery, 'DD-MM-YYYY')
+            WHEN actual_delivery LIKE '____-__-__' 
+                THEN TO_DATE(actual_delivery, 'YYYY-MM-DD')
+        END as actual_delivery,
+        quantity_ordered,
+        quantity_delivered
+    FROM supply_chain_dirty
+    WHERE actual_delivery IS NOT NULL 
+    AND quantity_delivered IS NOT NULL 
+    AND quantity_delivered > 0
+),
+kpis AS (
+    SELECT
+        supplier_name,
+        region,
+        ROUND(SUM(CASE 
+            WHEN actual_delivery <= expected_delivery
+            AND quantity_delivered = quantity_ordered
+            THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS otif_percentage,
+        ROUND(SUM(quantity_delivered) * 100.0 / SUM(quantity_ordered), 2) as fill_rate,
+        ROUND(AVG(actual_delivery - order_date)) as lead_time_days
+    FROM cleaned_data
+    GROUP BY supplier_name, region
+)
+SELECT * FROM kpis;
+```
