@@ -503,3 +503,59 @@ kpis AS (
 )
 SELECT * FROM kpis;
 ```
+
+
+## Ejercicios:
+
+## 1:
+Misma tabla orders → order_id, supplier_name, amount, delivery_date, expected_date, region
+
+Traé el nombre del proveedor, región, total de ventas y clasificalos como:
+
+'Premium' si el total supera el promedio general de ventas
+'Standard' si no lo supera
+
+```sql
+with
+  percent_general as (
+    select
+      avg(amount) as promedio_general
+    from
+      orders
+  ),
+  ventas_region as (
+    select
+      supplier_name,
+      region,
+      sum(amount) as sum_amount
+    from
+      orders
+    group by
+      supplier_name,
+      region
+  )
+  select
+  	supplier_name,
+  	region,
+  	sum_amount,
+  	CASE
+  		WHEN sum_amount > promedio_general THEN 'Premium'
+  		ELSE 'Standard'
+  	END as categoria
+  from ventas_region
+  cross join percent_general
+```
+## 2:
+Traé el top 3 de clientes con mayor venta por región
+```sql
+WITH rank as (
+    SELECT
+        customer_name,
+        region,
+        total_sales,
+        ROW_NUMBER() OVER (PARTITION BY region ORDER BY total_sales desc) as ranks
+    from sales
+)
+select * from rank
+where ranks <= 3
+```
