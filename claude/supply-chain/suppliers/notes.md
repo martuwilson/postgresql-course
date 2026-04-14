@@ -298,3 +298,31 @@ order by
 	
 select * from practice.v_clean_orders_kpis;
 ```
+
+## IMPORTANTE: Ahora unificar vistas usando INNER JOIN basado en supplier_name para tener una vista con toda la información limpia y los KPIs juntos. Esto es fundamental para análisis futuros y para facilitar el acceso a la información.
+
+```sql
+select
+(a.*),
+b.fill_rate,
+b.lead_time,
+b.otif_percentage
+from practice.v_clean_orders a
+inner join practice.v_clean_orders_kpis b on a.supplier_name = b.supplier_name;
+```
+
+
+# Paso final: view final:
+
+```sql
+CREATE VIEW practice.v_final_orders AS
+SELECT
+    a.*,
+    b.fill_rate,
+    b.lead_time,
+    b.otif_percentage
+FROM practice.v_clean_orders a
+INNER JOIN practice.v_clean_orders_kpis b ON a.supplier_name = b.supplier_name;
+
+select * from practice.v_final_orders;
+```
