@@ -235,3 +235,66 @@ select
 
  select * from practice.v_clean_orders;
 ```
+
+# Paso 8: Crear OTIF
+-- criterios personales: status = delivered / quantity_delivered = quantity_ordered / delivery_date - order_date <= 7
+
+```sql
+select
+	ROUND(SUM(CASE 
+            WHEN status = 'delivered'
+            AND quantity_delivered = quantity_ordered
+            AND delivery_date - order_date <= 7
+            THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2)::INT AS otif_percentage
+from practice.v_clean_orders;
+```
+
+# Paso 9: Lead time por proveedor
+
+```sql
+select
+	supplier_name,
+	ROUND(avg(delivery_date - order_date))::INT as lead_time
+from practice.v_clean_orders
+group by
+	supplier_name
+order by
+	lead_time desc;
+```
+
+# Paso 10: Fill Rate
+
+```sql
+select
+	supplier_name,
+	avg(quantity_delivered / quantity_ordered * 100)::INT as fill_rate
+from practice.v_clean_orders
+group by
+	supplier_name;
+```
+
+# Paso 11: Unificación de KPIs
+
+```sql
+CREATE VIEW practice.v_clean_orders_kpis AS
+with kpi as (
+	SELECT
+		supplier_name,
+		ROUND(SUM(CASE 
+            WHEN status = 'delivered'
+            AND quantity_delivered = quantity_ordered
+            AND delivery_date - order_date <= 7
+            THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2)::INT AS otif_percentage,
+            ROUND(avg(delivery_date - order_date))::INT as lead_time,
+            avg(quantity_delivered / quantity_ordered * 100)::INT as fill_rate
+    from practice.v_clean_orders
+	group by
+		supplier_name
+)
+select *
+from kpi
+order by
+	lead_time desc;
+	
+select * from practice.v_clean_orders_kpis;
+```
